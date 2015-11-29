@@ -43,11 +43,13 @@
 </html>
 
 <script src="../lib/Mouse.js"></script>
+
 <script src="automatic.js"></script>
 <script src="doubleslider.js"></script>
+<script src="quadslider.js"></script>
 <script>
 window.PICK_UP_ANYONE = true;
-
+window.IS_IN_SIGHT = true;
 var bias_text = document.getElementById("bias_text");
 var nonconform_text = document.getElementById("nonconform_text");
 
@@ -72,18 +74,21 @@ var whatever = new DoubleSlider(document.getElementById("slider"),{
 	}
 });
 
-var whatever = new DoubleSlider(document.getElementById("slider2"),{
+var whatever = new QuadSlider(document.getElementById("slider2"),{
 	backgrounds:[
 		{color:"#FFDD56",icon:"ds_happy.png"},
 		{color:"#567DFF",icon:"ds_happy.png"},
+		{color:"#bb3e3e",icon:"ds_happy.png"},
+		{color:"#913ebb",icon:"ds_happy.png"},
 		{color:"#000",icon:"ds_sad.png"}
 	],
-	values:[0.40,0.80],
+	values:[0.20,0.40,0.60,0.80],
 	onChange:function(values){
 
 		// Actual values
 		var VALUE_1 = values[0];
 		var VALUE_2 = values[1];
+
 		window.EMPTINESS = 1-VALUE_2;
 		window.RATIO_TRIANGLES = VALUE_1/VALUE_2;
 		window.RATIO_SQUARES = (VALUE_2-VALUE_1)/VALUE_2;

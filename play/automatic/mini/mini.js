@@ -1,24 +1,10 @@
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 
-var stats_canvas = document.getElementById("stats_canvas");
-var stats_ctx = stats_canvas.getContext("2d");
-
 var NONCONFORM = 1.00;
 var BIAS = 0.33;
-var TILE_SIZE = 30;
-var PEEP_SIZE = 30;
-var GRID_SIZE = 20;
+
 var DIAGONAL_SQUARED = (TILE_SIZE+5)*(TILE_SIZE+5) + (TILE_SIZE+5)*(TILE_SIZE+5);
-
-
-
-window.RATIO_TRIANGLES = 0.25;
-window.RATIO_SQUARES = 0.25;
-window.RATIO_CIRCLES = 0.25;
-window.RATIO_STARS = 0.25;
-window.EMPTINESS = 0.2;
-
 
 var assetsLeft = 0;
 var onImageLoaded = function(){
@@ -33,22 +19,16 @@ function addAsset(name,src){
 	images[name].src = src;
 }
 addAsset("yayTriangle","../img/yay_triangle.png");
+addAsset("yayTriangleBlink","../img/yay_triangle_blink.png");
 addAsset("mehTriangle","../img/meh_triangle.png");
 addAsset("sadTriangle","../img/sad_triangle.png");
 addAsset("yaySquare","../img/yay_square.png");
+addAsset("yaySquareBlink","../img/yay_square_blink.png");
 addAsset("mehSquare","../img/meh_square.png");
 addAsset("sadSquare","../img/sad_square.png");
 
-addAsset("yayCircle","../img/yay_circle.png");
-addAsset("mehCircle","../img/meh_circle.png");
-addAsset("sadCircle","../img/sad_circle.png");
-
-addAsset("yayStar","../img/yay_star.png");
-addAsset("mehStar","../img/meh_star.png");
-addAsset("sadStar","../img/sad_star.png");
-
-
 var IS_PICKING_UP = false;
+
 var lastMouseX, lastMouseY;
 
 function Draggable(x,y){
@@ -89,9 +69,9 @@ function Draggable(x,y){
 		var px = Math.floor(Mouse.x/TILE_SIZE);
 		var py = Math.floor(Mouse.y/TILE_SIZE);
 		if(px<0) px=0;
-		if(px>=GRID_SIZE) px=GRID_SIZE-1;
+		if(px>=GRID_SIZE_WIDTH) px=GRID_SIZE_WIDTH-1;
 		if(py<0) py=0;
-		if(py>=GRID_SIZE) py=GRID_SIZE-1;
+		if(py>=GRID_SIZE_HEIGHT) py=GRID_SIZE_HEIGHT-1;
 		var potentialX = (px+0.5)*TILE_SIZE;
 		var potentialY = (py+0.5)*TILE_SIZE;
 
@@ -111,9 +91,6 @@ function Draggable(x,y){
 			self.gotoX = pickupX;
 			self.gotoY = pickupY;
 		}else{
-			
-			STATS.steps++;
-			writeStats();
 
 			self.gotoX = potentialX;
 			self.gotoY = potentialY;
@@ -156,14 +133,11 @@ function Draggable(x,y){
 			if(self.sameness>0.99){
 				self.bored = true;
 			}
-			if(neighbors==0){
-				self.shaking = false;
-			}
 		}
 
 		// Dragging
 		if(!self.dragged){
-			if((self.shaking||window.PICK_UP_ANYONE) && Mouse.pressed && !lastPressed){
+			if(self.shaking && Mouse.pressed && !lastPressed){
 				var dx = Mouse.x-self.x;
 				var dy = Mouse.y-self.y;
 				if(Math.abs(dx)<PEEP_SIZE/2 && Math.abs(dy)<PEEP_SIZE/2){
@@ -186,15 +160,20 @@ function Draggable(x,y){
 	};
 
 	self.frame = 0;
+	self.blinking=0;
 	self.draw = function(){
 		ctx.save();
 		ctx.translate(self.x,self.y);
-		
 		if(self.shaking){
 			self.frame+=0.07;
 			ctx.translate(0,20);
 			ctx.rotate(Math.sin(self.frame-(self.x+self.y)/200)*Math.PI*0.05);
 			ctx.translate(0,-20);
+		}
+
+		// Blinking
+		if(Math.random()<0.01){
+			self.blinking=10;
 		}
 
 		// Draw thing
@@ -205,34 +184,25 @@ function Draggable(x,y){
 			}else if(self.bored){
 				img = images.mehTriangle;
 			}else{
-				img = images.yayTriangle;
+				if(self.blinking>0){
+					self.blinking--;
+					img = images.yayTriangleBlink;
+				}else{
+					img = images.yayTriangle;
+				}
 			}
-		}
-		else if(self.color=="circle"){
-	                if(self.shaking){
-                                img = images.sadCircle;
-                        }else if(self.bored){
-                                img = images.mehCircle;
-                        }else{
-                                img = images.yayCircle;
-                        }
-                }
-                else if(self.color=="star"){
-                        if(self.shaking){
-                                img = images.sadStar;
-                        }else if(self.bored){
-                                img = images.mehStar;
-                        }else{
-                                img = images.yayStar;
-                        }
-                }	
-		else{
+		}else{
 			if(self.shaking){
 				img = images.sadSquare;
 			}else if(self.bored){
 				img = images.mehSquare;
 			}else{
-				img = images.yaySquare;
+				if(self.blinking>0){
+					self.blinking--;
+					img = images.yaySquareBlink;
+				}else{
+					img = images.yaySquare;
+				}
 			}
 		}
 
@@ -245,6 +215,12 @@ function Draggable(x,y){
 			self.dangle *= 0.9;
 		}
 
+		/**
+		ANGER
+		ctx.translate(Math.random()*4-2,Math.random()*4-2);
+		ctx.rotate(Math.random()*0.2-0.1);
+		**/
+
 		ctx.drawImage(img,-PEEP_SIZE/2,-PEEP_SIZE/2,PEEP_SIZE,PEEP_SIZE);
 		ctx.restore();
 	};
@@ -254,48 +230,10 @@ function Draggable(x,y){
 window.START_SIM = false;
 
 var draggables;
-var STATS;
-window.reset = function(){
 
-	STATS = {
-		steps:0,
-		offset:0
-	};
-	START_SIM = false;
+function render(){
 
-	stats_ctx.clearRect(0,0,stats_canvas.width,stats_canvas.height);
-
-	draggables = [];
-	for(var x=0;x<GRID_SIZE;x++){
-		for(var y=0;y<GRID_SIZE;y++){
-			if(Math.random()<(1-window.EMPTINESS)){
-				var draggable = new Draggable((x+0.5)*TILE_SIZE, (y+0.5)*TILE_SIZE);
-				var mathr = Math.random();
-				if(mathr<.25)draggable.color="triangle";
-				else if(mathr<.5)draggable.color="square";
-				else if(mathr<.75)draggable.color="circle";
-				else draggable.color="star";
-				draggables.push(draggable);
-			}
-		}
-	}
-
-	// Write stats for first time
-	for(var i=0;i<draggables.length;i++){
-		draggables[i].update();
-	}
-	writeStats();
-
-}
-
-window.render = function(){
-
-	if(assetsLeft>0 || !draggables) return;
-	
-	// Is Stepping?
-	if(START_SIM){
-		step();
-	}
+	if(assetsLeft>0) return;
 
 	// Draw
 	Mouse.isOverDraggable = IS_PICKING_UP;
@@ -304,7 +242,7 @@ window.render = function(){
 		var d = draggables[i];
 		d.update();
 
-		if(d.shaking || window.PICK_UP_ANYONE){
+		if(d.shaking){
 			var dx = Mouse.x-d.x;
 			var dy = Mouse.y-d.y;
 			if(Math.abs(dx)<PEEP_SIZE/2 && Math.abs(dy)<PEEP_SIZE/2){
@@ -317,94 +255,39 @@ window.render = function(){
 		draggables[i].draw();
 	}
 
-	// Done stepping?
-	if(isDone()){
-		doneBuffer--;
-		if(doneBuffer==0){
-			doneAnimFrame = 30;
-			START_SIM = false;
-			console.log("DONE");
-			writeStats();
-		}
-	}else if(START_SIM){
-		
-		STATS.steps++;
-		doneBuffer = 30;
-
-		// Write stats
-		writeStats();
-
-	}
-	if(doneAnimFrame>0){
-		doneAnimFrame--;
-		var opacity = ((doneAnimFrame%15)/15)*0.2;
-		canvas.style.background = "rgba(255,255,255,"+opacity+")";
-	}else{
-		canvas.style.background = "none";
-	}
-
 	// Mouse
 	lastMouseX = Mouse.x;
 	lastMouseY = Mouse.y;
 
-}
-var stats_text = document.getElementById("stats_text");
+	// Done?
+	/*if(isDone()){
+		doneBuffer--;
+		if(doneBuffer==0){
+			doneAnimFrame = 30;
+			console.log("DONE");
+			
+			if(window.SOLVE_MESSAGE){
+				window.top.showEasterEgg(window.SOLVE_MESSAGE);
+			}
 
-var tmp_stats = document.createElement("canvas");
-tmp_stats.width = stats_canvas.width;
-tmp_stats.height = stats_canvas.height;
-
-window.writeStats = function(){
-
-	if(!draggables || draggables.length==0) return;
-
-	// Average Sameness Ratio
-	var total = 0;
-	for(var i=0;i<draggables.length;i++){
-		var d = draggables[i];
-		total += d.sameness || 0;
-	}
-	var avg = total/draggables.length;
-	if(isNaN(avg)) debugger;
-
-	// If stats oversteps, bump back
-	if(STATS.steps>320+STATS.offset){
-		STATS.offset += 120;
-		var tctx = tmp_stats.getContext("2d");
-		tctx.clearRect(0,0,tmp_stats.width,tmp_stats.height);
-		tctx.drawImage(stats_canvas,0,0);
-		stats_ctx.clearRect(0,0,stats_canvas.width,stats_canvas.height);
-		stats_ctx.drawImage(tmp_stats,-119,0);
-	}
-
-	// AVG -> SEGREGATION
-	var segregation = (avg-0.5)*2;
-	if(segregation<0) segregation=0;
-
-	// Graph it
-	stats_ctx.fillStyle = "#cc2727";
-	var x = STATS.steps - STATS.offset;
-	var y = 250 - segregation*250+10;
-	stats_ctx.fillRect(x,y,1,5);
-
-	// Text
-	stats_text.innerHTML = Math.floor(segregation*100)+"%";
-	stats_text.style.top = Math.round(y-15)+"px";
-	stats_text.style.left = Math.round(x+35)+"px";
-
-	// Button
-	if(START_SIM){
-		document.getElementById("moving").classList.add("moving");
+		}
 	}else{
-		document.getElementById("moving").classList.remove("moving");
+		doneBuffer = 30;
 	}
+	if(doneAnimFrame>0){
+		doneAnimFrame--;
+		var opacity = ((doneAnimFrame%15)/15);
+		canvas.style.background = "rgba(255,255,255,"+opacity+")";
+	}else{
+		canvas.style.background = "none";
+	}*/
 
 }
 
 var doneAnimFrame = 0;
-var doneBuffer = 30;
+var doneBuffer = 10;
 function isDone(){
-	if(Mouse.pressed) return false;
+	if(IS_PICKING_UP) return false;
 	for(var i=0;i<draggables.length;i++){
 		var d = draggables[i];
 		if(d.shaking) return false;
@@ -427,8 +310,8 @@ function step(){
 
 	// Go through every spot, get all empty ones
 	var empties = [];
-	for(var x=0;x<GRID_SIZE;x++){
-		for(var y=0;y<GRID_SIZE;y++){
+	for(var x=0;x<GRID_SIZE_WIDTH;x++){
+		for(var y=0;y<GRID_SIZE_HEIGHT;y++){
 
 			var spot = {
 				x: (x+0.5)*TILE_SIZE,
@@ -455,7 +338,6 @@ function step(){
 
 	// Go to a random empty spot
 	var spot = empties[Math.floor(Math.random()*empties.length)];
-	if(!spot) return;
 	shaker.gotoX = spot.x;
 	shaker.gotoY = spot.y;
 
@@ -468,6 +350,7 @@ window.requestAnimFrame = window.requestAnimationFrame ||
 	window.webkitRequestAnimationFrame ||
 	window.mozRequestAnimationFrame ||
 	function(callback){ window.setTimeout(callback, 1000/60); };
+
 (function animloop(){
 	requestAnimFrame(animloop);
 	if(window.IS_IN_SIGHT){

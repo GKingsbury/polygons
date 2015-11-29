@@ -13,7 +13,7 @@ new DoubleSlider(dom,{
 });
 
 ***/
-function DoubleSlider(dom,config){
+function QuadSlider(dom,config){
 
 	var self = this;
 	self.dom = dom;
@@ -26,20 +26,20 @@ function DoubleSlider(dom,config){
 
 	// Create DOM
 	self.dom.className = "ds";
-	for(var i=0;i<3;i++){
+	for(var i=0;i<5;i++){
 
 		var dom = document.createElement("div");
 		dom.className = "ds_bg";
 		self.dom.appendChild(dom);
-		self.backgrounds[2-i] = dom;
+		self.backgrounds[4-i] = dom;
 
 		// CSS
-		dom.style.backgroundColor = config.backgrounds[2-i].color;
-		dom.style.backgroundImage = "url("+config.backgrounds[2-i].icon+")";
+		dom.style.backgroundColor = config.backgrounds[4-i].color;
+		dom.style.backgroundImage = "url("+config.backgrounds[4-i].icon+")";
 		if(i==0) dom.style.width = "100%";
 
 	}
-	for(var i=0;i<2;i++){
+	for(var i=0;i<4;i++){
 		
 		var dom = document.createElement("div");
 		dom.className = "ds_slider";
@@ -112,22 +112,33 @@ function DoubleSlider(dom,config){
 	// UI Update
 	self.updateUI = function(){
 
-		for(var i=0;i<2;i++){
+		for(var i=0;i<4;i++){
 			var slider = self.sliders[i];
 			var val = self.values[i];
 			slider.style.left = (400*val - 5)+"px";
 		}
 
 		var bg;
-		var v0=self.values[0]*400, v1=self.values[1]*400;
+		var v0=self.values[0]*400, v1=self.values[1]*400, v2=self.values[2]*400, v3=self.values[3]*400;
 		bg = self.backgrounds[0];
 		bg.style.width = v0+"px";
+
 		bg = self.backgrounds[1];
 		bg.style.left = v0+"px";
 		bg.style.width = (v1-v0)+"px";
+		
 		bg = self.backgrounds[2];
 		bg.style.left = v1+"px";
-		bg.style.width = (400-v1)+"px";
+		bg.style.width = (v2-v1)+"px";
+
+
+		bg = self.backgrounds[3];
+		bg.style.left = v2+"px";
+		bg.style.width = (v3-v2)+"px";
+				
+		bg = self.backgrounds[4];
+		bg.style.left = v3+"px";
+		bg.style.width = (400-v3)+"px";
 			 
 
 	};
