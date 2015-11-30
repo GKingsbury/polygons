@@ -271,9 +271,9 @@ window.reset = function(){
 			if(Math.random()<(1-window.EMPTINESS)){
 				var draggable = new Draggable((x+0.5)*TILE_SIZE, (y+0.5)*TILE_SIZE);
 				var mathr = Math.random();
-				if(mathr<.25)draggable.color="triangle";
-				else if(mathr<.5)draggable.color="square";
-				else if(mathr<.75)draggable.color="circle";
+				if(mathr<window.RATIO_TRIANGLES)draggable.color="triangle";
+				else if(mathr<window.RATIO_TRIANGLES+window.RATIO_SQUARES)draggable.color="square";
+				else if(mathr<window.RATIO_TRIANGLES+window.RATIO_SQUARES+window.RATIO_CIRCLES)draggable.color="circle";
 				else draggable.color="star";
 				draggables.push(draggable);
 			}

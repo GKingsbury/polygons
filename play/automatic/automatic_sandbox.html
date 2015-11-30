@@ -26,8 +26,8 @@
 			<div id="slider"></div>
 			<br>
 
-			the triangle:square ratio is
-			<span class="highlight"><span id="ratio_text_triangles">40</span>:<span id="ratio_text_squares">40</span></span>,
+			the triangle:square:circle:star ratio is
+			<span class="highlight"><span id="ratio_text_triangles">20</span>:<span id="ratio_text_squares">20</span>:<span id="ratio_text_circles">20</span>:<span id="ratio_text_stars">20</span></span>,
 			board is
 			<span class="highlight" id="empty_text">20% empty</span>
 			<br>
@@ -85,18 +85,25 @@ var whatever = new QuadSlider(document.getElementById("slider2"),{
 	values:[0.20,0.40,0.60,0.80],
 	onChange:function(values){
 
-		// Actual values
+		// Actual % values
 		var VALUE_1 = values[0];
 		var VALUE_2 = values[1];
+		var VALUE_3 = values[2];
+		var VALUE_4 = values[3];
 
-		window.EMPTINESS = 1-VALUE_2;
-		window.RATIO_TRIANGLES = VALUE_1/VALUE_2;
-		window.RATIO_SQUARES = (VALUE_2-VALUE_1)/VALUE_2;
+		window.EMPTINESS = 1-VALUE_4;
+		window.RATIO_TRIANGLES = VALUE_1/VALUE_4;
+		window.RATIO_SQUARES = (VALUE_2-VALUE_1)/VALUE_4;
+		window.RATIO_CIRCLES = (VALUE_3-VALUE_2)/VALUE_4;
+		window.RATIO_STARS = (VALUE_4-VALUE_3)/VALUE_4;
 
 		// Write stats
 		START_SIM = false;
 		document.getElementById("ratio_text_triangles").innerHTML = Math.round(window.RATIO_TRIANGLES*100);
 		document.getElementById("ratio_text_squares").innerHTML = Math.round(window.RATIO_SQUARES*100);
+		document.getElementById("ratio_text_circles").innerHTML = Math.round(window.RATIO_CIRCLES*100);
+		document.getElementById("ratio_text_stars").innerHTML = Math.round(window.RATIO_STARS*100);
+
 		document.getElementById("empty_text").innerHTML = Math.round(window.EMPTINESS*100)+"% empty";
 
 	},
