@@ -27,6 +27,8 @@ div{
 #canvas{
 	display: block;
 	float:left;
+	background: url(http://i.imgur.com/Iox9wzg.png);
+	background-size:cover;
 }
 #stats{
 	width:400px; height:100%;
